@@ -31,9 +31,10 @@ class DBHelper {
       console.log("dbhelper .. restaurants...", restaurants);
       const neighborhoods = restaurants.map((v, i) => restaurants[i].neighborhood);
       restaurantNeighborhoods = neighborhoods.filter((v, i) => neighborhoods.indexOf(v) == i);
-
+      console.log("dbhelper .. restaurantNeighborhoods", restaurantNeighborhoods);
       const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
       restaurantCuisines = cuisines.filter((v, i) => cuisines.indexOf(v) == i);
+      console.log("dbhelper .. restaurantCuisines", restaurantCuisines);      
       callback(null, restaurants);
     }).catch(error => {
       callback(error, null);

@@ -1,20 +1,33 @@
 (function () {
     'use strict';
 
-    let staticCacheName = "restaurant-v2";
+    let staticCacheName = "restaurant-v3";
 
     const urlsToCache = [
         "/",
         "/index.html",
         "/restaurant.html",
-        "/css/styles.css",       
+        "/css/styles.css",
         "/js/idb.js",
         "/js/idbhelper.js",
         "/js/dbhelper.js",
         "/js/main.js",
         "/js/restaurant_info.js",
         "/js/register_service_worker.js",
-        "/manifest.json"
+        "/manifest.json",
+        "/img",
+        "/img/tiles",
+        "/img/banners",
+        "/img/1.jpg",
+        "/img/2.jpg",
+        "/img/3.jpg",
+        "/img/4.jpg",
+        "/img/5.jpg",
+        "/img/6.jpg",
+        "/img/7.jpg",
+        "/img/8.jpg",
+        "/img/9.jpg",
+        "/img/10.jpg",
     ];
 
     self.addEventListener("install", event => {
@@ -44,62 +57,23 @@
             })
         );
     });
-
-    
+   
     self.addEventListener("fetch", event => {
-        let type = '';
-        let requestUrl = new URL(event.request.url);
-
-        if (requestUrl.pathname === '/' || requestUrl.pathname === '/index.html') {
-            type = '/index.html';
-        } else if (requestUrl.pathname.indexOf('/restaurant.html') > -1) {
-            type = '/restaurant.html';
-        }
-
-        if (type != '') {
+        const cacheRequest = event.request;
+        if (event.request.url.indexOf('maps.googleapis.com') < 0) {
             event.respondWith(
-                caches.open(staticCacheName).then(cache => {
-                    return cache.match(type).then(response => {
-                        console.log("type...", type);
-                        console.log("response...", response);
-                        let fetchPromise = fetch(type)
-                            .then(ntwkResponse => {
-                                cache.put(type, ntwkResponse.clone());
-                                return ntwkResponse;
-                            });
-                        return response || ntwkResponse;
-                    });
-                })
-            );
-        }
-        else if (urlsToCache.includes(requestUrl.href) || urlsToCache.includes(requestUrl.pathname)) {
-            event.respondWith(
-                caches.open(staticCacheName).then(cache => {
-                    return cache.match(event.request).then(response => {
-                        return response || fetch(event.request);
-                    });
+                caches.match(cacheRequest).then(resp => {
+                    return resp || fetch(event.request).then(response => {
+                        let responseClone = response.clone();
+                        caches.open(staticCacheName).then(cache => {
+                            cache.put(event.request, responseClone)
+                        })
+                        return response;
+                    })
                 }).catch(err => {
                     console.log("err in fetch for " + event.request.url, err);
                 })
             )
         }
     });
-
-    // self.addEventListener("fetch", event => {
-    //     const cacheRequest = event.request;        
-    //     event.respondWith(
-    //         caches.match(cacheRequest).then(resp => {
-    //             return resp || fetch(event.request).then(response => {
-    //                 let responseClone = response.clone();
-
-    //                 caches.open(staticCacheName).then(cache => {
-    //                     cache.put(event.request, responseClone)
-    //                 })
-    //                 return response;
-    //             })
-    //         }).catch(err => {
-    //             console.log("err in fetch for " + event.request.url, err);
-    //         })
-    //     )
-    // });    
 })();
