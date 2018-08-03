@@ -57,23 +57,27 @@
             })
         );
     });
-   
+
     self.addEventListener("fetch", event => {
         const cacheRequest = event.request;
-        if (event.request.url.indexOf('maps.googleapis.com') < 0) {
-            event.respondWith(
-                caches.match(cacheRequest).then(resp => {
-                    return resp || fetch(event.request).then(response => {
-                        let responseClone = response.clone();
+        event.respondWith(
+            caches.match(cacheRequest).then(resp => {
+                if (resp) {
+                    return resp;
+                }
+                var fetchRequest = event.request.clone();
+                return fetch(fetchRequest).then(response => {
+                    let responseClone = response.clone();
+                    if (response.type === 'basic' || event.request.url.indexOf('https://maps.googleapis.com/maps/api/js') === 0) {
                         caches.open(staticCacheName).then(cache => {
-                            cache.put(event.request, responseClone)
+                            return cache.put(event.request, responseClone)
                         })
-                        return response;
-                    })
-                }).catch(err => {
-                    console.log("err in fetch for " + event.request.url, err);
+                    }
+                    return response;
                 })
-            )
-        }
+            }).catch(err => {
+                console.log("err in fetch for " + event.request.url, err);
+            })
+        )
     });
 })();
